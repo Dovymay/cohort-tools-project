@@ -42,11 +42,11 @@ app.get("/docs", (req, res) => {
 });
 
 //Get all students
-app.get("/api/students", (req, res)=>{
+app.get("/api/students", (req, res) => {
   StudentModel.find({})
   .then((students) => {
     console.log("Students incoming", students);
-    res.json(students);
+    res.status(200).json(students);
   })
   .catch((error) => {
       console.error("Error while retrieving students ->", error);
@@ -54,7 +54,70 @@ app.get("/api/students", (req, res)=>{
     });
 })
 
+//Get all students of specific cohort?
+app.get("/api/students/cohort/:cohortId", (req, res) => {
+  StudentModel.findById(req.params.cohortId)
+  .then((allCohortStudents) => {
+    console.log("Students incoming", allCohortStudents);
+    res.status(200).json(allCohortStudents);
+  })
+  .catch((err) => {
+      console.log(err);
+      res.status(500).json(err);
+    });
+})
 
+//Returns the specified student by id
+app.get("/api/students/:studentId", (req, res) => {
+  StudentModel.findById(req.params.studentId)
+  .then((oneStudent) => {
+    console.log("Student incoming", oneStudent);
+    res.status(200).json(oneStudent);
+  })
+  .catch((err) => {
+      console.log(err);
+      res.status(500).json(err);
+    });
+})
+
+//Create new student
+app.post("/api/students", (req, res) => {
+  StudentModel.create(req.body)
+  .then(createdStudent => {
+    console.log("Created!", createdStudent)
+    res.status(201).json(createdStudent)
+  })
+  .catch((err) => {
+      console.log(err);
+      res.status(500).json(err);
+    });
+})
+
+//Updates the specified student by id
+app.put("/api/students/:studentId", (req, res) => {
+  StudentModel.findByIdAndUpdate(req.params.studentId, req.body, {new: true})
+  .then(updatedStudent => {
+    console.log("Updated student", updatedStudent)
+    res.status(200).json(updatedBook)
+  })
+  .catch((err) => {
+      console.log(err);
+      res.status(500).json(err);
+    });
+})
+
+//Deletes the specified cohort by id
+app.delete("/api/students/:studentId", (req, res) => {
+  StudentModel.delete(req.params.studentId)
+  .then((result) => {
+    console.log("Deleted!");
+    res.status(200).send("Student deleted");
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json(err);
+    });
+})
 
 
 //Routes with Static data:
