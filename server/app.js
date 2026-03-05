@@ -6,6 +6,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const StudentModel = require("./models/StudentModel");
 const CohortModel = require("./models/CohortModel")
+const {errorHandler, notFoundHandler} = require("./middleware/error-handling.js")
 
 // STATIC DATA
 // Devs Team - Import the provided files with JSON data of students and cohorts here:
@@ -43,133 +44,135 @@ app.get("/docs", (req, res) => {
 });
 
 //Get all students
-app.get("/api/students", (req, res) => {
+app.get("/api/students", (req, res, next) => {
   StudentModel.find({})
   .populate('cohort')
   .then((students) => {
     console.log("Students incoming", students);
     res.status(200).json(students);
   })
-  .catch((error) => {
-      console.error("Error while retrieving students ->", error);
-      res.status(500).json({ error: "Failed to retrieve students" });
+  .catch(error => {
+      next(error);
+      // res.status(500).json({ error: "Failed to retrieve students" });
     });
 })
 
 //Get all students of specific cohort?
-app.get("/api/students/cohort/:cohortId", (req, res) => {
+app.get("/api/students/cohort/:cohortId", (req, res, next) => {
   StudentModel.find({cohort: req.params.cohortId})
   .then((cohortStudents) => {
     console.log("Students incoming", cohortStudents);
     res.status(200).json(cohortStudents);
   })
-  .catch((err) => {
-      console.log(err);
-      res.status(500).json(err);
+  .catch(error => {
+      next(error);
+      // res.status(500).json(err);
     });
 })
 
 //Returns the specified student by id
-app.get("/api/students/:studentId", (req, res) => {
+app.get("/api/students/:studentId", (req, res, next) => {
   StudentModel.findById(req.params.studentId).populate('cohort')
   .then((oneStudent) => {
     console.log("Student incoming", oneStudent);
     res.status(200).json(oneStudent);
   })
-  .catch((err) => {
-      console.log(err);
-      res.status(500).json(err);
+  .catch(error => {
+      next(error);
+      // res.status(500).json(err);
     });
 })
 
 //Create new student 
-app.post("/api/students", (req, res) => {
+app.post("/api/students", (req, res, next) => {
   StudentModel.create(req.body)
   .then(createdStudent => {
     console.log("Created!", createdStudent)
     res.status(201).json(createdStudent)
   })
-  .catch((err) => {
-      console.log(err);
-      res.status(500).json(err);
+  .catch(error => {
+      next(error);
+      // res.status(500).json(err);
     });
 })
 
 //Updates the specified student by id
-app.put("/api/students/:studentId", (req, res) => {
+app.put("/api/students/:studentId", (req, res, next) => {
   StudentModel.findByIdAndUpdate(req.params.studentId, req.body, {new: true})
   .then(updatedStudent => {
     console.log("Updated student", updatedStudent)
     res.status(200).json(updatedStudent)
   })
-  .catch((err) => {
-      console.log(err);
-      res.status(500).json(err);
+  .catch(error => {
+      next(error);
+      // res.status(500).json(err);
     });
 })
 
 //Deletes the specified student by id 
-app.delete("/api/students/:studentId", (req, res) => {
+app.delete("/api/students/:studentId", (req, res, next) => {
   StudentModel.findByIdAndDelete(req.params.studentId)
   .then((result) => {
     console.log("Deleted!");
     res.status(200).send(result);
     })
-    .catch((err) => {
-      console.log(err);
-      res.status(500).json(err);
+    .catch(error => {
+      next(error);
+      // res.status(500).json(err);
     });
 })
 
 //Cohort routes
 //Create new one
-app.post("/api/cohorts" , async (req, res) => {
+app.post("/api/cohorts" , async (req, res, next) => {
   try {
     const createdCohort = await CohortModel.create(req.body);
     res.status(201).json(createdCohort);
     console.log("Created")
   } catch (err) {
-    console.log(err);
-    res.status(500).json(err);
+    next(err);
+    // res.status(500).json(err);
   }
 })
 
 //Get all cohorts
-app.get("/api/cohorts", (req, res) => {
+app.get("/api/cohorts", (req, res, next) => {
   CohortModel.find({})
   .then((cohorts) => {
     console.log("Cohorts incoming", cohorts);
     res.status(200).json(cohorts);
   })
-  .catch((error) => {
-      console.error("Error while retrieving cohorts ->", error);
-      res.status(500).json({ error: "Failed to retrieve cohorts" });
+  .catch((err) => {
+      next(err);
     });
 })
 
 //  Updating Cohort
-app.put("/api/cohorts/:cohortId", (req, res) => {
+app.put("/api/cohorts/:cohortId", (req, res, next) => {
   CohortModel.findByIdAndUpdate(req.params.cohortId, req.body, {new: true})
   .then(updatedCohort => {
     console.log("Updated cohort", updatedCohort)
     res.status(200).json(updatedCohort)
   })
   .catch((err) => {
-      console.log(err);
-      res.status(500).json(err);
+      next(err);
     });
 })
 
 // Delete Cohort
-app.delete("/api/cohorts/:cohortId" , async (req, res) => {
+app.delete("/api/cohorts/:cohortId" , async (req, res, next) => {
   try{
 const deletedCohort = await CohortModel.findByIdAndDelete(req.params.cohortId)
 res.status(200).json(deletedCohort);
   }catch (err) {
-    console.log(err);
-    res.status(500).json(err);
+    next(err);
   }
 })
+
+// Set up custom error handling middleware:
+app.use(errorHandler);
+app.use(notFoundHandler);
+
 
 
 //Routes with Static data:
