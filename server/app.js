@@ -7,6 +7,10 @@ const mongoose = require("mongoose");
 const StudentModel = require("./models/StudentModel");
 const CohortModel = require("./models/CohortModel")
 const {errorHandler, notFoundHandler} = require("./middleware/error-handling.js")
+const dotenv = require("dotenv")
+const authRoutes = require("./routes/auth.routes");
+
+dotenv.config()
 
 // STATIC DATA
 // Devs Team - Import the provided files with JSON data of students and cohorts here:
@@ -169,9 +173,12 @@ res.status(200).json(deletedCohort);
   }
 })
 
+//Auth routes
+app.use("/auth", authRoutes)
 // Set up custom error handling middleware:
 app.use(errorHandler);
 app.use(notFoundHandler);
+
 
 
 
